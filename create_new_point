@@ -1,0 +1,54 @@
+#! /bin/bash
+#Создаёт в текущей папке все скрипты планировщиков. + их .exe файлы. Остаётся только раскидать.
+#Ну достало меня руками что-то менять, копировать, вставлять.
+
+nomer=$1
+if [ $nomer -lt 10 ]
+then
+nomer='0'$1
+fi
+fname=''
+type[1]=''
+type[2]=''
+type[3]=''
+type[4]=''
+username[1]=''
+username[2]=''
+username[3]=''
+username[4]=''
+cat "/somefolder/Bases.txt" | iconv -f WINDOWS-1251 -t UTF8 -o "/somefolder/Bases" #list of db's if need change codepage
+for A in '1' '2' '3' '4'
+do
+    fname=program_"${type[$A]}"_"$nomer"
+    touch $fname
+    echo -n "" > $fname
+
+    DB="$(cat "/somefolder/Bases" | sed "s/KЯ/КЯ/" | egrep -m 1 "КЯ-$nomer" | sed "s/\r//")"
+    #DB="$(echo $DB | sed "s/\r//")"
+    echo "#! /bin/bash" >> $fname
+    echo "" >> $fname
+    echo pname=D8_"${type[$A]}"_m"$nomer".exe >> $fname
+    echo "" >> $fname
+    echo "if [ \"\$(ps -AfH | grep \$pname | wc -l )\" -gt 1 ]" >> $fname
+    echo "then" >> $fname
+    echo -e "\t xmessage \"\$pname already run!!!\" &" >> $fname
+    echo "else" >> $fname
+
+    echo -e -n "\t wine C:\\" >> $fname; echo -n "\\"Domino8"\\""\\"BIN"\\""\\" >> $fname; echo -n "\$pname" >> $fname; echo -n " "u:"\\" >> $fname; echo -n "\\"domino8"\\" >> $fname; echo -n "\\"project"\\" >> $fname; echo -n "\\etk" >> $fname
+    echo -n " " >> $fname; echo "DBServer=\"$DB\" username=\"${username[$A]}\" &" >> $fname
+
+    echo "fi" >> $fname
+    echo "" >> $fname
+    echo "exit 0" >> $fname
+
+    cp /windows/u/Domino8/BIN/DOMINO8.EXE "$(pwd)/$fname.exe"
+    cp "$(pwd)/$fname.exe" "/somesomefolder/$fname.exe"
+    cp "$(pwd)/$fname.exe" "/somefolder/EXEs/$fname.exe"
+    cp "$(pwd)/$fname" "/somefolder/${type[$A]}/$fname"
+
+    rm -f "$(pwd)/$fname"
+    rm -f "$(pwd)/$fname.exe"
+    echo "Скрипты и .exe файлы ${type[$A]} для $nomer ($DB) созданы."
+done
+
+exit 0
